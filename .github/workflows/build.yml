@@ -16,7 +16,7 @@ permissions:
 jobs:
   build:
     name: Build iOS IPA (TrollStore Compatible)
-    runs-on: macos-14        # GitHub 提供的 macOS Sonoma runner,自带 Xcode 15
+    runs-on: macos-15        # macos-15 自带 Xcode 16,支持 XcodeGen 生成的最新工程格式
 
     steps:
       - name: Checkout 源码
