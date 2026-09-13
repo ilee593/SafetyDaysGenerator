@@ -154,7 +154,7 @@ struct ContentView: View {
             }
             savedImage = uiImage
             do {
-                try PhotoSaver.save(image: uiImage)
+                try await PhotoSaver.save(image: uiImage)
                 alertMessage = "已保存到相册 ✅\n去微信群发一下吧"
             } catch {
                 alertMessage = error.localizedDescription
