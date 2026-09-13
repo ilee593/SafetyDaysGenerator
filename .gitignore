@@ -1,0 +1,29 @@
+# Xcode
+build/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+
+# CocoaPods / SPM(本项目未使用)
+Pods/
+Package.resolved
+.swiftpm/
+
+# macOS
+.DS_Store
+
+# 构建产物
+*.ipa
+*.app
+Payload/
+
+# XcodeGen 生成的工程(可提交也可不提交;我们选择不提交,Actions 现场生成)
+SafetyDaysGenerator.xcodeproj/
+
+# 本地临时
+*.log
+.env
