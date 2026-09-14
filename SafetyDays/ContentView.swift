@@ -368,6 +368,33 @@ struct ContentView: View {
 
         let imageSize = image.size
 
+        // 采样模板真实背景色（多点平均）—— 让覆盖色与原图背景一致，
+        // 不会形成"区块"。
+        let topBg = sampleAverageColor(
+            image: image,
+            points: [
+                CGPoint(x: imageSize.width * 0.55, y: imageSize.height * 0.16),
+                CGPoint(x: imageSize.width * 0.70, y: imageSize.height * 0.16),
+                CGPoint(x: imageSize.width * 0.80, y: imageSize.height * 0.16)
+            ],
+            fallback: UIColor.white
+        )
+
+        let orangeBg = sampleAverageColor(
+            image: image,
+            points: [
+                CGPoint(x: imageSize.width * 0.62, y: imageSize.height * 0.265),
+                CGPoint(x: imageSize.width * 0.72, y: imageSize.height * 0.265),
+                CGPoint(x: imageSize.width * 0.80, y: imageSize.height * 0.265)
+            ],
+            fallback: UIColor(
+                red: 0.96,
+                green: 0.55,
+                blue: 0.12,
+                alpha: 1.0
+            )
+        )
+
         let renderer = UIGraphicsImageRenderer(size: imageSize)
 
         let result = renderer.image { context in
@@ -375,17 +402,8 @@ struct ContentView: View {
             // 1. 画原始模板
             image.draw(in: CGRect(origin: .zero, size: imageSize))
 
-            // --------------------------------------------------
-            // 2. 顶部"数字矩形"：先整块涂白抹掉原虚线框，
-            //    再在框里写一个大号黑字"天数"。
-            //
-            //    比例来自原模板实际占位框（≈x:540 起，
-            //    这里用 x:0.50 起，0.36 宽，0.16 高）。
-            //
-            //    字号取 宽度方向(0.45×W) 和 高度方向(0.85×H)
-            //    的较小值——保证 4 位数 "1216" 在不撑出的
-            //    前提下尽量撑满矩形。
-            // --------------------------------------------------
+            // 2. 顶部数字矩形：用采样到的真实背景色覆盖，
+            //    覆盖色与周围模板一致，区块不可见。
             let topRect = CGRect(
                 x: imageSize.width * 0.50,
                 y: imageSize.height * 0.08,
@@ -393,12 +411,13 @@ struct ContentView: View {
                 height: imageSize.height * 0.16
             )
 
-            UIColor.white.setFill()
+            topBg.setFill()
             UIRectFill(topRect)
 
+            // 3. 顶部数字：缩小 ~25%（系数从 0.46/0.85 改为 0.32/0.60）
             let topFontSize = min(
-                topRect.width * 0.46,
-                topRect.height * 0.85
+                topRect.width * 0.32,
+                topRect.height * 0.60
             )
 
             drawCenteredText(
@@ -409,13 +428,7 @@ struct ContentView: View {
                 context: context
             )
 
-            // --------------------------------------------------
-            // 3. 橙色条"数字矩形"：先涂橙色抹掉原占位线条，
-            //    再写一个大号白字。
-            //
-            //    比例 x:0.60 起，0.24 宽，0.08 高，
-            //    字号同样取 min(宽度比例, 高度比例)。
-            // --------------------------------------------------
+            // 4. 橙色条数字矩形
             let orangeRect = CGRect(
                 x: imageSize.width * 0.60,
                 y: imageSize.height * 0.225,
@@ -423,17 +436,12 @@ struct ContentView: View {
                 height: imageSize.height * 0.08
             )
 
-            UIColor(
-                red: 0.96,
-                green: 0.55,
-                blue: 0.12,
-                alpha: 1.0
-            ).setFill()
+            orangeBg.setFill()
             UIRectFill(orangeRect)
 
             let orangeFontSize = min(
-                orangeRect.width * 0.46,
-                orangeRect.height * 0.85
+                orangeRect.width * 0.32,
+                orangeRect.height * 0.60
             )
 
             drawCenteredText(
@@ -446,6 +454,82 @@ struct ContentView: View {
         }
 
         return result
+    }
+
+    // MARK: - 像素采样：从模板中取 1×1 像素多点平均
+
+    private static func sampleAverageColor(
+        image: UIImage,
+        points: [CGPoint],
+        fallback: UIColor
+    ) -> UIColor {
+
+        guard let cgImage = image.cgImage else {
+            return fallback
+        }
+
+        let imgW = cgImage.width
+        let imgH = cgImage.height
+
+        var totalR = 0.0
+        var totalG = 0.0
+        var totalB = 0.0
+        var count = 0
+
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+
+        for point in points {
+            // UIImage 坐标原点在左下，CGImage 在左上
+            let cgX = max(0, min(imgW - 1, Int(point.x.rounded())))
+            let cgY = max(0, min(imgH - 1, imgH - Int(point.y.rounded()) - 1))
+
+            let cropRect = CGRect(
+                x: cgX,
+                y: cgY,
+                width: 1,
+                height: 1
+            )
+
+            guard let cropped = cgImage.cropping(to: cropRect) else {
+                continue
+            }
+
+            var pixel = [UInt8](repeating: 0, count: 4)
+
+            guard let ctx = CGContext(
+                data: &pixel,
+                width: 1,
+                height: 1,
+                bitsPerComponent: 8,
+                bytesPerRow: 4,
+                space: colorSpace,
+                bitmapInfo: bitmapInfo
+            ) else {
+                continue
+            }
+
+            ctx.draw(
+                cropped,
+                in: CGRect(x: 0, y: 0, width: 1, height: 1)
+            )
+
+            totalR += Double(pixel[0]) / 255.0
+            totalG += Double(pixel[1]) / 255.0
+            totalB += Double(pixel[2]) / 255.0
+            count += 1
+        }
+
+        if count == 0 {
+            return fallback
+        }
+
+        return UIColor(
+            red: CGFloat(totalR / Double(count)),
+            green: CGFloat(totalG / Double(count)),
+            blue: CGFloat(totalB / Double(count)),
+            alpha: 1.0
+        )
     }
 
     // MARK: - 居中文字
