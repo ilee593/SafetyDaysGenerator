@@ -113,7 +113,31 @@ struct ContentView: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { toolbarItems }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                HStack(spacing: 8) {
+                    Image(systemName: "shield.fill")
+                        .foregroundColor(.white)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("安全天数生成器")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("一键生成 · 自动计算 · 保存相册")
+                            .font(.system(size: 12))
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showingSettings = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(.white)
+                }
+            }
+        }
         .toolbarBackground(Color.blue, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
     }
@@ -129,36 +153,6 @@ struct ContentView: View {
         .padding(.horizontal, 16)
         .padding(.top, 16)
         .padding(.bottom, 30)
-    }
-
-    // MARK: - Toolbar
-
-    @ToolbarContentBuilder
-    private var toolbarItems: some ToolbarContent {
-        ToolbarItem(placement: .navigationBarLeading) {
-            HStack(spacing: 8) {
-                Image(systemName: "shield.fill")
-                    .foregroundColor(.white)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("安全天数生成器")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                    Text("一键生成 · 自动计算 · 保存相册")
-                        .font(.system(size: 12))
-                        .foregroundColor(.white.opacity(0.9))
-                }
-            }
-        }
-
-        ToolbarItem(placement: .navigationBarTrailing) {
-            Button {
-                showingSettings = true
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 22))
-                    .foregroundColor(.white)
-            }
-        }
     }
 
     // MARK: - 加载设置
