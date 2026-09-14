@@ -376,30 +376,30 @@ struct ContentView: View {
             image.draw(in: CGRect(origin: .zero, size: imageSize))
 
             // --------------------------------------------------
-            // 2. 覆盖顶部"数字区"的虚线/方框（用白色填充）
-            //    模板里的开发占位框，给原模板的 x ≈ 0.527 处。
-            //    我们用比框稍大的范围全涂白，抹掉框线。
+            // 2. 顶部"数字矩形"：先整块涂白抹掉原虚线框，
+            //    再在框里写一个大号黑字"天数"。
+            //
+            //    比例来自原模板实际占位框（≈x:540 起，
+            //    这里用 x:0.50 起，0.36 宽，0.16 高）。
+            //
+            //    字号取 宽度方向(0.45×W) 和 高度方向(0.85×H)
+            //    的较小值——保证 4 位数 "1216" 在不撑出的
+            //    前提下尽量撑满矩形。
             // --------------------------------------------------
-            let topCoverRect = CGRect(
-                x: imageSize.width * 0.49,
-                y: imageSize.height * 0.07,
-                width: imageSize.width * 0.38,
-                height: imageSize.height * 0.18
+            let topRect = CGRect(
+                x: imageSize.width * 0.50,
+                y: imageSize.height * 0.08,
+                width: imageSize.width * 0.36,
+                height: imageSize.height * 0.16
             )
 
             UIColor.white.setFill()
-            UIRectFill(topCoverRect)
+            UIRectFill(topRect)
 
-            // 3. 顶部数字（黑色加粗，居中）
-            let topRect = CGRect(
-                x: imageSize.width * 0.50,
-                y: imageSize.height * 0.085,
-                width: imageSize.width * 0.36,
-                height: imageSize.height * 0.14
+            let topFontSize = min(
+                topRect.width * 0.46,
+                topRect.height * 0.85
             )
-
-            // 字体占 rect 宽度 24%（原来只 10%，太小）
-            let topFontSize = topRect.width * 0.24
 
             drawCenteredText(
                 "\(days)",
@@ -410,29 +410,31 @@ struct ContentView: View {
             )
 
             // --------------------------------------------------
-            // 4. 覆盖橙色条里的"数字区"虚线（用橙色重新填充）
-            //    橙色 HEX 大约是 #F58C1E
+            // 3. 橙色条"数字矩形"：先涂橙色抹掉原占位线条，
+            //    再写一个大号白字。
+            //
+            //    比例 x:0.60 起，0.24 宽，0.08 高，
+            //    字号同样取 min(宽度比例, 高度比例)。
             // --------------------------------------------------
-            let orangeCoverRect = CGRect(
-                x: imageSize.width * 0.62,
-                y: imageSize.height * 0.225,
-                width: imageSize.width * 0.22,
-                height: imageSize.height * 0.075
-            )
-
-            UIColor(red: 0.96, green: 0.55, blue: 0.12, alpha: 1.0).setFill()
-            UIRectFill(orangeCoverRect)
-
-            // 5. 橙色条内数字（白色加粗，居中）
             let orangeRect = CGRect(
-                x: imageSize.width * 0.62,
-                y: imageSize.height * 0.23,
-                width: imageSize.width * 0.20,
-                height: imageSize.height * 0.065
+                x: imageSize.width * 0.60,
+                y: imageSize.height * 0.225,
+                width: imageSize.width * 0.24,
+                height: imageSize.height * 0.08
             )
 
-            // 字体占 rect 宽度 14%（原来 5.5%，太小）
-            let orangeFontSize = orangeRect.width * 0.14
+            UIColor(
+                red: 0.96,
+                green: 0.55,
+                blue: 0.12,
+                alpha: 1.0
+            ).setFill()
+            UIRectFill(orangeRect)
+
+            let orangeFontSize = min(
+                orangeRect.width * 0.46,
+                orangeRect.height * 0.85
+            )
 
             drawCenteredText(
                 "\(days)",
