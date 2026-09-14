@@ -74,10 +74,25 @@ struct ContentView: View {
     // MARK: - Body
 
     var body: some View {
-        NavigationView {
-            scrollContent
+        ScrollView {
+            VStack(spacing: 16) {
+                headerBar
+                dateInformationCard
+                titleCard
+                generateButton
+                if let msg = saveMessage {
+                    Text(msg)
+                        .font(.system(size: 14))
+                        .foregroundColor(.green)
+                }
+                previewSection
+                footerHint
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 30)
         }
-        .navigationViewStyle(.stack)
+        .background(Color(.systemGroupedBackground))
         .sheet(isPresented: $showingSettings) {
             SettingsView(
                 defaultStartDateString: $defaultStartDateString,
@@ -105,103 +120,58 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - ScrollView 容器（拆出来让 body 变小，编译器能推导）
+    // MARK: - 顶部蓝色标题栏（替代 NavigationView + toolbar）
 
-    private var scrollContent: some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            contentStack
-        }
-        .background(Color(.systemGroupedBackground))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                HStack(spacing: 8) {
-                    Image(systemName: "shield.fill")
-                        .foregroundColor(.white)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("安全天数生成器")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                        Text("一键生成 · 自动计算 · 保存相册")
-                            .font(.system(size: 12))
-                            .foregroundColor(.white.opacity(0.9))
-                    }
-                }
+    private var headerBar: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.shield.fill")
+                .font(.system(size: 30))
+                .foregroundColor(.white)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("安全天数生成器")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                Text("一键生成 · 自动计算 · 保存相册")
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.9))
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 22))
-                        .foregroundColor(.white)
-                }
+            Spacer()
+            Button {
+                showingSettings = true
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.white)
             }
-        }
-        .toolbarBackground(Color.blue, for: .navigationBar)
-        .toolbarBackground(.visible, for: .navigationBar)
-    }
-
-    private var contentStack: some View {
-        VStack(spacing: 16) {
-            dateInformationCard
-            titleCard
-            generateButton
-            previewSection
-            footerHint
         }
         .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .padding(.bottom, 30)
-    }
-
-    // MARK: - 加载设置
-
-    private func loadStoredSettings() {
-        if let date = Self.dateFormatter.date(from: defaultStartDateString) {
-            startDate = date
-        } else {
-            startDate = Self.defaultStartDate()
-        }
-        imageTitle = defaultTitle
+        .padding(.vertical, 14)
+        .background(Color(red: 0.08, green: 0.44, blue: 0.84))
     }
 
     // MARK: - 日期信息卡片
 
     private var dateInformationCard: some View {
-        VStack(spacing: 0) {
-            HStack(alignment: .top, spacing: 12) {
-                startDateColumn
-                todayDateColumn
-                daysCountColumn
-            }
-            .padding(16)
-
-            Divider()
-
-            HStack {
-                Text("起始：\(startDateText)")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                Spacer()
-                Text("今天：\(todayDateText)")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
+        HStack(spacing: 0) {
+            startDateColumn
+            Divider().frame(height: 40)
+            todayDateColumn
+            Divider().frame(height: 40)
+            daysCountColumn
         }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
         .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.06), radius: 5, x: 0, y: 2)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, y: 2)
     }
 
     private var startDateColumn: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 2) {
             Text("起始日期")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.secondary)
-            DatePicker("", selection: $startDate, displayedComponents: [.date])
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+            DatePicker("", selection: $startDate, displayedComponents: .date)
                 .labelsHidden()
                 .datePickerStyle(.compact)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
@@ -210,11 +180,11 @@ struct ContentView: View {
     }
 
     private var todayDateColumn: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 2) {
             Text("今天日期")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.secondary)
-            DatePicker("", selection: $todayDate, displayedComponents: [.date])
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+            DatePicker("", selection: $todayDate, displayedComponents: .date)
                 .labelsHidden()
                 .datePickerStyle(.compact)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
@@ -223,19 +193,17 @@ struct ContentView: View {
     }
 
     private var daysCountColumn: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 2) {
             Text("已持续天数")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(.secondary)
-            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text("\(days)")
-                    .font(.system(size: 30, weight: .bold))
+                    .font(.system(size: 26, weight: .black))
                     .foregroundColor(.blue)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.6)
                 Text("天")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 14))
+                    .foregroundColor(.blue)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -244,24 +212,24 @@ struct ContentView: View {
     // MARK: - 标题卡片
 
     private var titleCard: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .top, spacing: 12) {
             Image(systemName: "doc.text.fill")
-                .font(.system(size: 24))
                 .foregroundColor(.blue)
-                .frame(width: 32)
-            VStack(alignment: .leading, spacing: 6) {
+                .font(.system(size: 22))
+                .padding(.top, 6)
+            VStack(alignment: .leading, spacing: 8) {
                 Text("图片标题（可自定义）")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12))
+                    .foregroundColor(.gray)
                 TextField("请输入图片标题", text: $imageTitle)
-                    .font(.system(size: 16))
-                    .textFieldStyle(.plain)
+                    .font(.system(size: 14))
             }
         }
-        .padding(16)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 14)
         .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.06), radius: 5, x: 0, y: 2)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, y: 2)
     }
 
     // MARK: - 生成按钮
@@ -283,9 +251,9 @@ struct ContentView: View {
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .background(Color.blue)
-            .cornerRadius(14)
+            .padding(.vertical, 16)
+            .background(Color(red: 0.08, green: 0.44, blue: 0.84))
+            .cornerRadius(12)
         }
         .disabled(isGenerating)
     }
@@ -293,13 +261,17 @@ struct ContentView: View {
     // MARK: - 预览
 
     private var previewSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("图片预览")
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.primary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "photo.fill")
+                    .foregroundColor(.blue)
+                Text("图片预览")
+                    .font(.system(size: 15, weight: .medium))
+            }
+            .padding(.horizontal, 4)
             previewImage
-                .clipShape(RoundedRectangle(cornerRadius: 16))
-                .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .shadow(radius: 6)
         }
     }
 
@@ -311,7 +283,7 @@ struct ContentView: View {
                 .scaledToFit()
         } else {
             ZStack {
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(Color.gray.opacity(0.12))
                 VStack(spacing: 10) {
                     Image(systemName: "photo")
@@ -329,15 +301,23 @@ struct ContentView: View {
     // MARK: - 底部提示
 
     private var footerHint: some View {
-        HStack(alignment: .top, spacing: 6) {
-            Text("ℹ️")
-                .font(.system(size: 12))
+        HStack(spacing: 6) {
+            Image(systemName: "info.circle")
             Text("生成的图片会自动保存到 iPhone 相册。")
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-            Spacer()
         }
-        .padding(.horizontal, 4)
+        .font(.system(size: 12))
+        .foregroundColor(.gray)
+    }
+
+    // MARK: - 加载设置
+
+    private func loadStoredSettings() {
+        if let date = Self.dateFormatter.date(from: defaultStartDateString) {
+            startDate = date
+        } else {
+            startDate = Self.defaultStartDate()
+        }
+        imageTitle = defaultTitle
     }
 
     // MARK: - 生成图片
@@ -367,6 +347,15 @@ struct ContentView: View {
                 }
             }
         }
+    }
+
+    // MARK: - 状态文案
+
+    private var saveMessage: String? {
+        if let img = generatedImage {
+            return "✅ 已生成预览（自动保存：\(autoSave ? "开" : "关"))"
+        }
+        return nil
     }
 
     // MARK: - 图片绘制
