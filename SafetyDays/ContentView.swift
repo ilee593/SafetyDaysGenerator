@@ -152,14 +152,35 @@ struct ContentView: View {
     // MARK: - 日期信息卡片
 
     private var dateInformationCard: some View {
-        HStack(spacing: 0) {
-            startDateColumn
-            Divider().frame(height: 40)
-            todayDateColumn
-            Divider().frame(height: 40)
-            daysCountColumn
+        VStack(spacing: 12) {
+            // 上排：起始日期 + 今天日期
+            HStack(spacing: 16) {
+                startDateColumn
+                Spacer(minLength: 8)
+                Divider().frame(height: 36)
+                Spacer(minLength: 8)
+                todayDateColumn
+            }
+
+            Divider()
+
+            // 下排：已持续天数（大号）
+            HStack(alignment: .firstTextBaseline) {
+                Text("已持续天数")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.gray)
+                Spacer()
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(days)")
+                        .font(.system(size: 36, weight: .black))
+                        .foregroundColor(.blue)
+                    Text("天")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.blue)
+                }
+            }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 16)
         .padding(.vertical, 14)
         .background(Color.white)
         .cornerRadius(12)
@@ -167,46 +188,29 @@ struct ContentView: View {
     }
 
     private var startDateColumn: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("起始日期")
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
             DatePicker("", selection: $startDate, displayedComponents: .date)
                 .labelsHidden()
                 .datePickerStyle(.compact)
+                .scaleEffect(0.9, anchor: .leading)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var todayDateColumn: some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("今天日期")
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
             DatePicker("", selection: $todayDate, displayedComponents: .date)
                 .labelsHidden()
                 .datePickerStyle(.compact)
+                .scaleEffect(0.9, anchor: .leading)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var daysCountColumn: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("已持续天数")
-                .font(.system(size: 12))
-                .foregroundColor(.gray)
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(days)")
-                    .font(.system(size: 26, weight: .black))
-                    .foregroundColor(.blue)
-                Text("天")
-                    .font(.system(size: 14))
-                    .foregroundColor(.blue)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - 标题卡片
@@ -368,16 +372,34 @@ struct ContentView: View {
 
         let result = renderer.image { context in
 
+            // 1. 画原始模板
             image.draw(in: CGRect(origin: .zero, size: imageSize))
 
-            let topRect = CGRect(
-                x: imageSize.width * 0.47,
-                y: imageSize.height * 0.10,
-                width: imageSize.width * 0.33,
-                height: imageSize.height * 0.09
+            // --------------------------------------------------
+            // 2. 覆盖顶部"数字区"的虚线/方框（用白色填充）
+            //    模板里的开发占位框，给原模板的 x ≈ 0.527 处。
+            //    我们用比框稍大的范围全涂白，抹掉框线。
+            // --------------------------------------------------
+            let topCoverRect = CGRect(
+                x: imageSize.width * 0.49,
+                y: imageSize.height * 0.07,
+                width: imageSize.width * 0.38,
+                height: imageSize.height * 0.18
             )
 
-            let topFontSize = topRect.width * 0.10
+            UIColor.white.setFill()
+            UIRectFill(topCoverRect)
+
+            // 3. 顶部数字（黑色加粗，居中）
+            let topRect = CGRect(
+                x: imageSize.width * 0.50,
+                y: imageSize.height * 0.085,
+                width: imageSize.width * 0.36,
+                height: imageSize.height * 0.14
+            )
+
+            // 字体占 rect 宽度 24%（原来只 10%，太小）
+            let topFontSize = topRect.width * 0.24
 
             drawCenteredText(
                 "\(days)",
@@ -387,14 +409,30 @@ struct ContentView: View {
                 context: context
             )
 
-            let orangeRect = CGRect(
-                x: imageSize.width * 0.65,
-                y: imageSize.height * 0.245,
-                width: imageSize.width * 0.17,
-                height: imageSize.height * 0.05
+            // --------------------------------------------------
+            // 4. 覆盖橙色条里的"数字区"虚线（用橙色重新填充）
+            //    橙色 HEX 大约是 #F58C1E
+            // --------------------------------------------------
+            let orangeCoverRect = CGRect(
+                x: imageSize.width * 0.62,
+                y: imageSize.height * 0.225,
+                width: imageSize.width * 0.22,
+                height: imageSize.height * 0.075
             )
 
-            let orangeFontSize = orangeRect.width * 0.055
+            UIColor(red: 0.96, green: 0.55, blue: 0.12, alpha: 1.0).setFill()
+            UIRectFill(orangeCoverRect)
+
+            // 5. 橙色条内数字（白色加粗，居中）
+            let orangeRect = CGRect(
+                x: imageSize.width * 0.62,
+                y: imageSize.height * 0.23,
+                width: imageSize.width * 0.20,
+                height: imageSize.height * 0.065
+            )
+
+            // 字体占 rect 宽度 14%（原来 5.5%，太小）
+            let orangeFontSize = orangeRect.width * 0.14
 
             drawCenteredText(
                 "\(days)",
