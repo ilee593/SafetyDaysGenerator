@@ -368,53 +368,21 @@ struct ContentView: View {
 
         let imageSize = image.size
 
-        // 采样模板真实背景色（多点平均）—— 让覆盖色与原图背景一致，
-        // 不会形成"区块"。
-        let topBg = sampleAverageColor(
-            image: image,
-            points: [
-                CGPoint(x: imageSize.width * 0.55, y: imageSize.height * 0.16),
-                CGPoint(x: imageSize.width * 0.70, y: imageSize.height * 0.16),
-                CGPoint(x: imageSize.width * 0.80, y: imageSize.height * 0.16)
-            ],
-            fallback: UIColor.white
-        )
-
-        let orangeBg = sampleAverageColor(
-            image: image,
-            points: [
-                CGPoint(x: imageSize.width * 0.62, y: imageSize.height * 0.265),
-                CGPoint(x: imageSize.width * 0.72, y: imageSize.height * 0.265),
-                CGPoint(x: imageSize.width * 0.80, y: imageSize.height * 0.265)
-            ],
-            fallback: UIColor(
-                red: 0.96,
-                green: 0.55,
-                blue: 0.12,
-                alpha: 1.0
-            )
-        )
-
         let renderer = UIGraphicsImageRenderer(size: imageSize)
 
         let result = renderer.image { context in
 
-            // 1. 画原始模板
+            // 1. 画原始模板（新模板无虚线，直接画）
             image.draw(in: CGRect(origin: .zero, size: imageSize))
 
-            // 2. 顶部数字矩形：用采样到的真实背景色覆盖，
-            //    覆盖色与周围模板一致，区块不可见。
+            // 2. 顶部数字（位置已上移、右移）
             let topRect = CGRect(
-                x: imageSize.width * 0.50,
-                y: imageSize.height * 0.08,
-                width: imageSize.width * 0.36,
+                x: imageSize.width * 0.53,
+                y: imageSize.height * 0.06,
+                width: imageSize.width * 0.34,
                 height: imageSize.height * 0.16
             )
 
-            topBg.setFill()
-            UIRectFill(topRect)
-
-            // 3. 顶部数字：缩小 ~25%（系数从 0.46/0.85 改为 0.32/0.60）
             let topFontSize = min(
                 topRect.width * 0.32,
                 topRect.height * 0.60
@@ -428,16 +396,13 @@ struct ContentView: View {
                 context: context
             )
 
-            // 4. 橙色条数字矩形
+            // 3. 橙色条数字（位置已上移、右移）
             let orangeRect = CGRect(
-                x: imageSize.width * 0.60,
-                y: imageSize.height * 0.225,
-                width: imageSize.width * 0.24,
+                x: imageSize.width * 0.62,
+                y: imageSize.height * 0.215,
+                width: imageSize.width * 0.22,
                 height: imageSize.height * 0.08
             )
-
-            orangeBg.setFill()
-            UIRectFill(orangeRect)
 
             let orangeFontSize = min(
                 orangeRect.width * 0.32,
@@ -454,82 +419,6 @@ struct ContentView: View {
         }
 
         return result
-    }
-
-    // MARK: - 像素采样：从模板中取 1×1 像素多点平均
-
-    private static func sampleAverageColor(
-        image: UIImage,
-        points: [CGPoint],
-        fallback: UIColor
-    ) -> UIColor {
-
-        guard let cgImage = image.cgImage else {
-            return fallback
-        }
-
-        let imgW = cgImage.width
-        let imgH = cgImage.height
-
-        var totalR = 0.0
-        var totalG = 0.0
-        var totalB = 0.0
-        var count = 0
-
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
-
-        for point in points {
-            // UIImage 坐标原点在左下，CGImage 在左上
-            let cgX = max(0, min(imgW - 1, Int(point.x.rounded())))
-            let cgY = max(0, min(imgH - 1, imgH - Int(point.y.rounded()) - 1))
-
-            let cropRect = CGRect(
-                x: cgX,
-                y: cgY,
-                width: 1,
-                height: 1
-            )
-
-            guard let cropped = cgImage.cropping(to: cropRect) else {
-                continue
-            }
-
-            var pixel = [UInt8](repeating: 0, count: 4)
-
-            guard let ctx = CGContext(
-                data: &pixel,
-                width: 1,
-                height: 1,
-                bitsPerComponent: 8,
-                bytesPerRow: 4,
-                space: colorSpace,
-                bitmapInfo: bitmapInfo
-            ) else {
-                continue
-            }
-
-            ctx.draw(
-                cropped,
-                in: CGRect(x: 0, y: 0, width: 1, height: 1)
-            )
-
-            totalR += Double(pixel[0]) / 255.0
-            totalG += Double(pixel[1]) / 255.0
-            totalB += Double(pixel[2]) / 255.0
-            count += 1
-        }
-
-        if count == 0 {
-            return fallback
-        }
-
-        return UIColor(
-            red: CGFloat(totalR / Double(count)),
-            green: CGFloat(totalG / Double(count)),
-            blue: CGFloat(totalB / Double(count)),
-            alpha: 1.0
-        )
     }
 
     // MARK: - 居中文字
