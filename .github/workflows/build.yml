@@ -150,17 +150,35 @@ jobs:
           echo "============================================"
           echo "APP_PATH: $APP_PATH"
           echo "============================================"
-          ls -la "$APP_PATH"
-          echo "============================================"
 
-          if [ ! -f "$APP_PATH/SafetyDays" ]; then
-            echo "ERROR: SafetyDays executable NOT found in app bundle."
+          echo "--- Contents of SafetyDays.app/ ---"
+          ls -la "$APP_PATH"
+          echo ""
+
+          echo "--- Info.plist CFBundleExecutable ---"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP_PATH/Info.plist" 2>&1 || echo "(missing)"
+          echo ""
+
+          echo "--- Info.plist CFBundleIdentifier ---"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$APP_PATH/Info.plist" 2>&1 || echo "(missing)"
+          echo ""
+
+          echo "--- Info.plist MinimumOSVersion ---"
+          /usr/libexec/PlistBuddy -c "Print :MinimumOSVersion" "$APP_PATH/Info.plist" 2>&1 || echo "(missing)"
+          echo ""
+
+          echo "--- Looking for executable ---"
+          EXEC_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleExecutable" "$APP_PATH/Info.plist" 2>/dev/null)
+          if [ -n "$EXEC_NAME" ] && [ -f "$APP_PATH/$EXEC_NAME" ]; then
+            echo "OK: $APP_PATH/$EXEC_NAME exists"
+            file "$APP_PATH/$EXEC_NAME"
+            lipo -info "$APP_PATH/$EXEC_NAME" 2>&1 || true
+          else
+            echo "MISSING executable: $APP_PATH/$EXEC_NAME"
+            echo "Files actually in app:"
             ls -la "$APP_PATH"
             exit 1
           fi
-
-          echo "Executable found:"
-          file "$APP_PATH/SafetyDays"
 
       # --------------------------------------------------
       # 12. 创建 Payload（用 ditto 保留 metadata）

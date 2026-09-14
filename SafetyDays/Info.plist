@@ -11,6 +11,9 @@
     <key>CFBundleName</key>
     <string>SafetyDays</string>
 
+    <key>CFBundleExecutable</key>
+    <string>SafetyDays</string>
+
     <key>CFBundleIdentifier</key>
     <string>com.safetydays.generator</string>
 
@@ -20,15 +23,26 @@
     <key>CFBundleVersion</key>
     <string>1</string>
 
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+
     <key>LSRequiresIPhoneOS</key>
     <true/>
+
+    <key>MinimumOSVersion</key>
+    <string>15.0</string>
 
     <key>UILaunchScreen</key>
     <dict/>
 
     <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>armv7</string>
+        <string>arm64</string>
+    </array>
+
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
     </array>
 
     <key>NSPhotoLibraryAddUsageDescription</key>
