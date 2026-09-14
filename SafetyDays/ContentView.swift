@@ -396,10 +396,10 @@ struct ContentView: View {
                 context: context
             )
 
-            // 3. 橙色条数字（再往右、回到原位偏下一点）
+            // 3. 橙色条数字（再上一点点）
             let orangeRect = CGRect(
                 x: imageSize.width * 0.64,
-                y: imageSize.height * 0.215,
+                y: imageSize.height * 0.208,
                 width: imageSize.width * 0.22,
                 height: imageSize.height * 0.08
             )
