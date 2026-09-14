@@ -8,11 +8,6 @@ xcuserdata/
 *.xcscmblueprint
 *.xccheckout
 
-# CocoaPods / SPM(本项目未使用)
-Pods/
-Package.resolved
-.swiftpm/
-
 # macOS
 .DS_Store
 
@@ -20,9 +15,12 @@ Package.resolved
 *.ipa
 *.app
 Payload/
+dist/
 
-# XcodeGen 生成的工程(可提交也可不提交;我们选择不提交,Actions 现场生成)
-SafetyDaysGenerator.xcodeproj/
+# Swift Package Manager(本项目未使用)
+.build/
+Package.resolved
+.swiftpm/
 
 # 本地临时
 *.log

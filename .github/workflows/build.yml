@@ -1,39 +1,34 @@
-name: Build SafetyDays IPA
+name: Build Unsigned IPA
 
 on:
-  # 手动触发(推荐,改完代码点一下就编译)
-  workflow_dispatch:
-  # 推送到 main 时自动编译
   push:
-    branches: [main]
-  # PR 也编译(用于检查能不能过编译)
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   build:
-    name: Build iOS IPA (TrollStore Compatible)
-    runs-on: macos-15        # macos-15 自带 Xcode 16,支持 XcodeGen 生成的最新工程格式
+    runs-on: macos-15
 
     steps:
-      - name: Checkout 源码
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 安装 XcodeGen
+      - name: Install XcodeGen
         run: brew install xcodegen
 
-      - name: 生成 Xcode 工程
-        run: xcodegen generate --spec project.yml
+      - name: Generate Xcode project
+        run: xcodegen generate
 
-      - name: 编译 (无签名,供 TrollStore 安装)
+      - name: Build app
         run: |
           set -o pipefail
-          xcodebuild \
-            -project SafetyDaysGenerator.xcodeproj \
-            -scheme SafetyDaysGenerator \
+          xcodebuild -project SafetyDays.xcodeproj \
+            -scheme SafetyDays \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -sdk iphoneos \
@@ -45,36 +40,34 @@ jobs:
             CODE_SIGN_ENTITLEMENTS="" \
             build
 
-      - name: 打包为 IPA
+      - name: Package IPA
         run: |
-          APP_PATH=$(find build -name "SafetyDaysGenerator.app" -path "*Release-iphoneos*" | head -1)
+          APP_PATH=$(find build -name "SafetyDays.app" -path "*Release-iphoneos*" | head -1)
           if [ -z "$APP_PATH" ]; then
             echo "❌ 没找到编译产物"
             find build -name "*.app" -type d
             exit 1
           fi
           echo "✅ 找到 App: $APP_PATH"
-          mkdir -p dist/Payload
-          cp -R "$APP_PATH" dist/Payload/
-          cd dist
-          zip -r ../SafetyDaysGenerator.ipa Payload -q
-          cd ..
-          ls -lh SafetyDaysGenerator.ipa
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -r SafetyDays.ipa Payload -q
+          ls -lh SafetyDays.ipa
 
-      - name: 上传 IPA 到 Artifacts
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
-          name: SafetyDaysGenerator-IPA
-          path: SafetyDaysGenerator.ipa
+          name: SafetyDays-IPA
+          path: SafetyDays.ipa
           if-no-files-found: error
           retention-days: 90
 
-      - name: 打印完成信息
+      - name: Print summary
         if: success()
         run: |
           echo ""
           echo "============================================="
           echo "  ✅ IPA 已生成!"
-          echo "  📦 下载:本页面底部 Artifacts → SafetyDaysGenerator-IPA"
+          echo "  📦 下载:本页面底部 Artifacts → SafetyDays-IPA"
           echo "  📲 安装:把 IPA 用 AirDrop / 网盘传到 iPhone,共享给 TrollStore 即可"
           echo "============================================="
