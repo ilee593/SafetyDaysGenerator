@@ -1,27 +1,25 @@
 # Xcode
-build/
-DerivedData/
 *.xcodeproj/
 *.xcworkspace/
+build/
+DerivedData/
+*.pbxuser
+*.perspective
+*.perspectivev3
 xcuserdata/
-*.xcuserstate
-*.xcscmblueprint
 *.xccheckout
-
-# macOS
-.DS_Store
-
-# 构建产物
+*.moved-aside
+*.hmap
 *.ipa
-*.app
-Payload/
-dist/
+*.dSYM.zip
+*.dSYM
 
-# Swift Package Manager(本项目未使用)
+# Swift Package Manager
 .build/
+Packages/
+Package.pins
 Package.resolved
-.swiftpm/
 
-# 本地临时
-*.log
-.env
+# OS
+.DS_Store
+Thumbs.db

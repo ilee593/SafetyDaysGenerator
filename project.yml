@@ -1,10 +1,9 @@
 name: SafetyDays
 options:
-  bundleIdPrefix: com.safetydays
+  bundleIdPrefix: com.yourname
   deploymentTarget:
     iOS: "15.0"
   createIntermediateGroups: true
-
 targets:
   SafetyDays:
     type: application
@@ -13,15 +12,18 @@ targets:
       - path: SafetyDays
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.safetydays.app
+        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.SafetyDays
         INFOPLIST_FILE: SafetyDays/Info.plist
-        PRODUCT_NAME: SafetyDays
-        MARKETING_VERSION: "1.0.0"
-        CURRENT_PROJECT_VERSION: "1"
         CODE_SIGN_IDENTITY: ""
         CODE_SIGNING_REQUIRED: NO
         CODE_SIGNING_ALLOWED: NO
         DEVELOPMENT_TEAM: ""
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_VERSION: "5.0"
-        GENERATE_INFOPLIST_FILE: "NO"
+    info:
+      path: SafetyDays/Info.plist
+      properties:
+        CFBundleDisplayName: 安全天数
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait

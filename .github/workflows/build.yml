@@ -3,20 +3,15 @@ name: Build Unsigned IPA
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-13
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install XcodeGen
         run: brew install xcodegen
@@ -26,48 +21,23 @@ jobs:
 
       - name: Build app
         run: |
-          set -o pipefail
           xcodebuild -project SafetyDays.xcodeproj \
             -scheme SafetyDays \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
             -sdk iphoneos \
-            -derivedDataPath build \
+            -configuration Release \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_STYLE=Manual \
-            CODE_SIGN_ENTITLEMENTS="" \
-            build
+            -derivedDataPath build
 
       - name: Package IPA
         run: |
-          APP_PATH=$(find build -name "SafetyDays.app" -path "*Release-iphoneos*" | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "❌ 没找到编译产物"
-            find build -name "*.app" -type d
-            exit 1
-          fi
-          echo "✅ 找到 App: $APP_PATH"
           mkdir -p Payload
-          cp -R "$APP_PATH" Payload/
-          zip -r SafetyDays.ipa Payload -q
-          ls -lh SafetyDays.ipa
+          cp -r build/Build/Products/Release-iphoneos/SafetyDays.app Payload/
+          zip -r SafetyDays.ipa Payload
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: SafetyDays-IPA
+          name: SafetyDays.ipa
           path: SafetyDays.ipa
-          if-no-files-found: error
-          retention-days: 90
-
-      - name: Print summary
-        if: success()
-        run: |
-          echo ""
-          echo "============================================="
-          echo "  ✅ IPA 已生成!"
-          echo "  📦 下载:本页面底部 Artifacts → SafetyDays-IPA"
-          echo "  📲 安装:把 IPA 用 AirDrop / 网盘传到 iPhone,共享给 TrollStore 即可"
-          echo "============================================="
