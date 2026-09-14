@@ -88,7 +88,7 @@ struct ContentView: View {
                 previewSection
                 footerHint
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 24)
             .padding(.top, 16)
             .padding(.bottom, 30)
         }
@@ -396,10 +396,10 @@ struct ContentView: View {
                 context: context
             )
 
-            // 3. 橙色条数字（再往右、往上一点）
+            // 3. 橙色条数字（再往右、回到原位偏下一点）
             let orangeRect = CGRect(
                 x: imageSize.width * 0.64,
-                y: imageSize.height * 0.205,
+                y: imageSize.height * 0.215,
                 width: imageSize.width * 0.22,
                 height: imageSize.height * 0.08
             )
