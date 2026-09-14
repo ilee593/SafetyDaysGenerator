@@ -375,9 +375,9 @@ struct ContentView: View {
             // 1. 画原始模板（新模板无虚线，直接画）
             image.draw(in: CGRect(origin: .zero, size: imageSize))
 
-            // 2. 顶部数字（位置已上移、右移）
+            // 2. 顶部数字（再往右一点）
             let topRect = CGRect(
-                x: imageSize.width * 0.53,
+                x: imageSize.width * 0.55,
                 y: imageSize.height * 0.06,
                 width: imageSize.width * 0.34,
                 height: imageSize.height * 0.16
@@ -396,10 +396,10 @@ struct ContentView: View {
                 context: context
             )
 
-            // 3. 橙色条数字（位置已上移、右移）
+            // 3. 橙色条数字（再往右、往上一点）
             let orangeRect = CGRect(
-                x: imageSize.width * 0.62,
-                y: imageSize.height * 0.215,
+                x: imageSize.width * 0.64,
+                y: imageSize.height * 0.205,
                 width: imageSize.width * 0.22,
                 height: imageSize.height * 0.08
             )
