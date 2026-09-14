@@ -22,11 +22,9 @@ targets:
     platform: iOS
 
     sources:
-      - path: SafetyDays/SafetyDaysApp.swift
-      - path: SafetyDays/ContentView.swift
-
-    resources:
-      - path: SafetyDays/Assets.xcassets
+      - path: SafetyDays
+        excludes:
+          - "Info.plist"
 
     settings:
       base:
