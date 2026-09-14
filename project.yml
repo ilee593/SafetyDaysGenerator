@@ -1,29 +1,50 @@
-name: SafetyDays
+name: SafetyDaysGenerator
+
 options:
-  bundleIdPrefix: com.yourname
   deploymentTarget:
     iOS: "15.0"
   createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGNING_ALLOWED: "NO"
+
 targets:
+
   SafetyDays:
     type: application
     platform: iOS
+
     sources:
-      - path: SafetyDays
+      - path: SafetyDays/SafetyDaysApp.swift
+      - path: SafetyDays/ContentView.swift
+
+    resources:
+      - path: SafetyDays/Assets.xcassets
+
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.yourname.SafetyDays
-        INFOPLIST_FILE: SafetyDays/Info.plist
-        CODE_SIGN_IDENTITY: ""
-        CODE_SIGNING_REQUIRED: NO
-        CODE_SIGNING_ALLOWED: NO
-        DEVELOPMENT_TEAM: ""
-        TARGETED_DEVICE_FAMILY: "1"
+        PRODUCT_BUNDLE_IDENTIFIER: "com.safetydays.generator"
+        INFOPLIST_FILE: "SafetyDays/Info.plist"
+        PRODUCT_NAME: "SafetyDays"
         SWIFT_VERSION: "5.0"
-    info:
-      path: SafetyDays/Info.plist
-      properties:
-        CFBundleDisplayName: 安全天数
-        UILaunchScreen: {}
-        UISupportedInterfaceOrientations:
-          - UIInterfaceOrientationPortrait
+        IPHONEOS_DEPLOYMENT_TARGET: "15.0"
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: "Manual"
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_IDENTITY: ""
+        CODE_SIGNING_REQUIRED: "NO"
+        CODE_SIGNING_ALLOWED: "NO"
+
+      configs:
+        Debug:
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+
+        Release:
+          SWIFT_OPTIMIZATION_LEVEL: "-O"

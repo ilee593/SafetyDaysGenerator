@@ -1,43 +1,192 @@
-name: Build Unsigned IPA
+name: Build SafetyDays IPA
 
 on:
-  push:
-    branches: [ main ]
+
   workflow_dispatch:
 
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
 jobs:
+
   build:
-    runs-on: macos-13
+
+    name: Build iOS IPA
+
+    runs-on: macos-15-intel
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+
+      # --------------------------------------------------
+      # 1. 下载 GitHub 仓库
+      # --------------------------------------------------
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --------------------------------------------------
+      # 2. 显示环境
+      # --------------------------------------------------
+
+      - name: Show build environment
+        run: |
+          echo "macOS:"
+          sw_vers
+
+          echo ""
+          echo "Xcode:"
+          xcodebuild -version
+
+          echo ""
+          echo "Swift:"
+          swift --version
+
+      # --------------------------------------------------
+      # 3. 安装 XcodeGen
+      # --------------------------------------------------
 
       - name: Install XcodeGen
-        run: brew install xcodegen
+        run: |
+          brew update
+          brew install xcodegen
+
+      # --------------------------------------------------
+      # 4. 检查 XcodeGen
+      # --------------------------------------------------
+
+      - name: Check XcodeGen
+        run: |
+          xcodegen version
+
+      # --------------------------------------------------
+      # 5. 检查项目文件
+      # --------------------------------------------------
+
+      - name: Check project files
+        run: |
+          echo "Project:"
+          find . -maxdepth 3 -type f | sort
+
+      # --------------------------------------------------
+      # 6. 生成 Xcode 工程
+      # --------------------------------------------------
 
       - name: Generate Xcode project
-        run: xcodegen generate
-
-      - name: Build app
         run: |
-          xcodebuild -project SafetyDays.xcodeproj \
+          xcodegen generate
+
+      # --------------------------------------------------
+      # 7. 检查工程
+      # --------------------------------------------------
+
+      - name: Check generated project
+        run: |
+          ls -la
+          ls -la SafetyDays.xcodeproj
+
+      # --------------------------------------------------
+      # 8. 清理
+      # --------------------------------------------------
+
+      - name: Clean build
+        run: |
+          xcodebuild \
+            -project SafetyDays.xcodeproj \
             -scheme SafetyDays \
-            -sdk iphoneos \
             -configuration Release \
+            -sdk iphoneos \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
-            -derivedDataPath build
+            clean
 
-      - name: Package IPA
+      # --------------------------------------------------
+      # 9. 编译
+      # --------------------------------------------------
+
+      - name: Build SafetyDays
         run: |
+          xcodebuild \
+            -project SafetyDays.xcodeproj \
+            -scheme SafetyDays \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            build
+
+      # --------------------------------------------------
+      # 10. 查找 APP
+      # --------------------------------------------------
+
+      - name: Locate SafetyDays.app
+        run: |
+          echo "Searching for SafetyDays.app..."
+          find build -name "SafetyDays.app" -type d -print
+
+      # --------------------------------------------------
+      # 11. 创建 Payload
+      # --------------------------------------------------
+
+      - name: Create IPA structure
+        run: |
+          rm -rf Payload
           mkdir -p Payload
-          cp -r build/Build/Products/Release-iphoneos/SafetyDays.app Payload/
-          zip -r SafetyDays.ipa Payload
+
+          APP_PATH=$(find build \
+            -type d \
+            -path "*/Build/Products/Release-iphoneos/SafetyDays.app" \
+            -print -quit)
+
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: SafetyDays.app not found."
+            exit 1
+          fi
+
+          echo "APP_PATH=$APP_PATH"
+
+          cp -R "$APP_PATH" Payload/SafetyDays.app
+
+      # --------------------------------------------------
+      # 12. 创建 IPA
+      # --------------------------------------------------
+
+      - name: Create IPA
+        run: |
+          rm -f SafetyDays.ipa
+
+          /usr/bin/zip \
+            -r \
+            -q \
+            SafetyDays.ipa \
+            Payload
+
+          echo "IPA created:"
+          ls -lh SafetyDays.ipa
+
+      # --------------------------------------------------
+      # 13. 验证 IPA
+      # --------------------------------------------------
+
+      - name: Verify IPA
+        run: |
+          unzip -l SafetyDays.ipa
+
+      # --------------------------------------------------
+      # 14. 上传 IPA
+      # --------------------------------------------------
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: SafetyDays.ipa
+          name: SafetyDays-IPA
           path: SafetyDays.ipa
+          if-no-files-found: error
+          retention-days: 7

@@ -1,36 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+
 <plist version="1.0">
 <dict>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>zh_CN</string>
+
     <key>CFBundleDisplayName</key>
-    <string>安全天数</string>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleIdentifier</key>
-    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
+    <string>安全天数生成器</string>
+
     <key>CFBundleName</key>
-    <string>$(PRODUCT_NAME)</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
+    <string>SafetyDays</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.safetydays.generator</string>
+
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>1.0.0</string>
+
     <key>CFBundleVersion</key>
     <string>1</string>
+
     <key>LSRequiresIPhoneOS</key>
     <true/>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>需要保存生成的图片到您的相册</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>需要访问相册以保存图片</string>
+
     <key>UILaunchScreen</key>
     <dict/>
-    <key>UISupportedInterfaceOrientations</key>
+
+    <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>UIInterfaceOrientationPortrait</string>
+        <string>armv7</string>
     </array>
+
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>安全天数生成器需要访问照片权限，以便将生成的安全天数图片保存到相册。</string>
+
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>安全天数生成器需要照片权限，以便保存和处理生成的图片。</string>
+
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleDefault</string>
+
 </dict>
 </plist>
