@@ -1,4 +1,4 @@
-name: SafetyDaysGenerator
+name: SafetyDays
 
 options:
   deploymentTarget:
