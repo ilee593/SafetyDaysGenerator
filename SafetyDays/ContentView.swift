@@ -1,7 +1,6 @@
 import SwiftUI
 import UIKit
 import Photos
-import AppIntents
 
 struct ContentView: View {
 
@@ -103,11 +102,6 @@ struct ContentView: View {
             loadStoredSettings()
             todayDate = Calendar.current.startOfDay(for: Date())
         }
-        .onReceive(NotificationCenter.default.publisher(for: .safetyDaysImageGenerated)) { note in
-            if let image = note.userInfo?["image"] as? UIImage {
-                generatedImage = image
-            }
-        }
         .onChange(of: defaultStartDateString) { newValue in
             if let date = Self.dateFormatter.date(from: newValue) {
                 startDate = date
@@ -125,6 +119,7 @@ struct ContentView: View {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 30))
                 .foregroundColor(.white)
+                .padding(.leading, 8)
             VStack(alignment: .leading, spacing: 2) {
                 Text("安全天数生成器")
                     .font(.system(size: 20, weight: .bold))
@@ -141,6 +136,7 @@ struct ContentView: View {
                     .font(.system(size: 22))
                     .foregroundColor(.white)
             }
+            .padding(.trailing, 18)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -295,7 +291,7 @@ struct ContentView: View {
                 Text("图片预览")
                     .font(.system(size: 15, weight: .medium))
             }
-            .padding(.leading, 20)
+            .padding(.leading, 24)
             previewImage
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .shadow(radius: 6)
@@ -589,19 +585,6 @@ struct SettingsView: View {
                 Toggle("生成后自动弹出分享面板", isOn: $autoShare)
             }
 
-            Section {
-                if #available(iOS 17.0, *) {
-                    SiriTipView(intent: GenerateAndShareIntent())
-                } else {
-                    Label("Siri 捷径「发安全天数」已注册", systemImage: "mic.fill")
-                    Text("打开系统的「快捷指令」App，找到「发安全天数」→ 添加到 Siri，即可说出「发安全天数」触发。")
-                }
-            } header: {
-                Text("Siri")
-            } footer: {
-                Text("触发后自动生成图片、保存到相册并弹出分享面板。")
-            }
-
             Section("关于") {
                 HStack {
                     Text("版本")
@@ -615,11 +598,34 @@ struct SettingsView: View {
 }
 
 
-// MARK: - 系统分享面板（共享 Presenter，避免 iOS 16 SwiftUI sheet 白屏）
+// MARK: - 系统分享面板（UIKit 直接 present，避免 iOS 16 SwiftUI sheet 白屏）
 
 extension ContentView {
 
     private func presentShareSheet(with image: UIImage) {
-        ShareSheetPresenter.present(image)
+        let activityVC = UIActivityViewController(
+            activityItems: [image],
+            applicationActivities: nil
+        )
+        activityVC.excludedActivityTypes = [
+            .addToReadingList,
+            .assignToContact,
+            .openInIBooks
+        ]
+
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            activityVC.popoverPresentationController?.sourceView = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+                .first?.rootViewController?.view
+        }
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.keyWindow?.rootViewController {
+            var presenter = rootVC
+            while let presented = presenter.presentedViewController {
+                presenter = presented
+            }
+            presenter.present(activityVC, animated: true)
+        }
     }
 }
