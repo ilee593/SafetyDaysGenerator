@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import Photos
+import AppIntents
 
 struct ContentView: View {
 
@@ -102,6 +103,11 @@ struct ContentView: View {
             loadStoredSettings()
             todayDate = Calendar.current.startOfDay(for: Date())
         }
+        .onReceive(NotificationCenter.default.publisher(for: .safetyDaysImageGenerated)) { note in
+            if let image = note.userInfo?["image"] as? UIImage {
+                generatedImage = image
+            }
+        }
         .onChange(of: defaultStartDateString) { newValue in
             if let date = Self.dateFormatter.date(from: newValue) {
                 startDate = date
@@ -174,6 +180,7 @@ struct ContentView: View {
                     .foregroundColor(.gray)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
+                    .padding(.leading, 6)
                 Spacer()
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(days)")
@@ -187,6 +194,7 @@ struct ContentView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                 }
+                .padding(.trailing, 6)
             }
         }
         .padding(.horizontal, 16)
@@ -209,6 +217,7 @@ struct ContentView: View {
                 .scaleEffect(0.9, anchor: .leading)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
         }
+        .padding(.leading, 6)
     }
 
     private var todayDateColumn: some View {
@@ -234,6 +243,7 @@ struct ContentView: View {
                 .foregroundColor(.blue)
                 .font(.system(size: 22))
                 .padding(.top, 6)
+                .padding(.leading, 8)
             VStack(alignment: .leading, spacing: 8) {
                 Text("图片标题（可自定义）")
                     .font(.system(size: 12))
@@ -285,7 +295,7 @@ struct ContentView: View {
                 Text("图片预览")
                     .font(.system(size: 15, weight: .medium))
             }
-            .padding(.horizontal, 4)
+            .padding(.leading, 12)
             previewImage
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .shadow(radius: 6)
@@ -579,6 +589,19 @@ struct SettingsView: View {
                 Toggle("生成后自动弹出分享面板", isOn: $autoShare)
             }
 
+            Section {
+                if #available(iOS 17.0, *) {
+                    SiriTipView(intent: GenerateAndShareIntent())
+                } else {
+                    Label("Siri 捷径「发安全天数」已注册", systemImage: "mic.fill")
+                    Text("打开系统的「快捷指令」App，找到「发安全天数」→ 添加到 Siri，即可说出「发安全天数」触发。")
+                }
+            } header: {
+                Text("Siri")
+            } footer: {
+                Text("触发后自动生成图片、保存到相册并弹出分享面板。")
+            }
+
             Section("关于") {
                 HStack {
                     Text("版本")
@@ -592,35 +615,11 @@ struct SettingsView: View {
 }
 
 
-// MARK: - 系统分享面板（UIKit 直接 present，避免 iOS 16 SwiftUI sheet 白屏）
+// MARK: - 系统分享面板（共享 Presenter，避免 iOS 16 SwiftUI sheet 白屏）
 
 extension ContentView {
 
     private func presentShareSheet(with image: UIImage) {
-        let activityVC = UIActivityViewController(
-            activityItems: [image],
-            applicationActivities: nil
-        )
-        activityVC.excludedActivityTypes = [
-            .addToReadingList,
-            .assignToContact,
-            .openInIBooks
-        ]
-
-        // iPad 需要 popover 锚点；iPhone 全屏 present
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            activityVC.popoverPresentationController?.sourceView = UIApplication.shared.connectedScenes
-                .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-                .first?.rootViewController?.view
-        }
-
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let rootVC = windowScene.keyWindow?.rootViewController {
-            var presenter = rootVC
-            while let presented = presenter.presentedViewController {
-                presenter = presented
-            }
-            presenter.present(activityVC, animated: true)
-        }
+        ShareSheetPresenter.present(image)
     }
 }
