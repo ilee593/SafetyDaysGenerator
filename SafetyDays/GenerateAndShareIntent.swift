@@ -131,3 +131,22 @@ struct GenerateAndShareIntent: AppIntent {
         }
     }
 }
+
+// MARK: - App Shortcuts Provider（向系统快捷指令 App 注册「发安全天数」）
+
+@available(iOS 16.0, *)
+struct SafetyDaysShortcutsProvider: AppShortcutsProvider {
+
+    static var shortcutTileColor: ShortcutTileColor = .blue
+
+    @AppShortcutsBuilder
+    static var appShortcuts: [AppShortcut] {
+        AppShortcut(
+            intent: GenerateAndShareIntent(),
+            phrases: [
+                "发安全天数",
+                "生成安全天数"
+            ]
+        )
+    }
+}

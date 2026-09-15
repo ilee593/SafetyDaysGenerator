@@ -180,7 +180,7 @@ struct ContentView: View {
                     .foregroundColor(.gray)
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
-                    .padding(.leading, 6)
+                    .padding(.leading, 14)
                 Spacer()
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(days)")
@@ -194,7 +194,7 @@ struct ContentView: View {
                         .lineLimit(1)
                         .minimumScaleFactor(0.5)
                 }
-                .padding(.trailing, 6)
+                .padding(.trailing, 14)
             }
         }
         .padding(.horizontal, 16)
@@ -217,7 +217,7 @@ struct ContentView: View {
                 .scaleEffect(0.9, anchor: .leading)
                 .environment(\.locale, Locale(identifier: "zh_CN"))
         }
-        .padding(.leading, 6)
+        .padding(.leading, 14)
     }
 
     private var todayDateColumn: some View {
@@ -243,7 +243,7 @@ struct ContentView: View {
                 .foregroundColor(.blue)
                 .font(.system(size: 22))
                 .padding(.top, 6)
-                .padding(.leading, 8)
+                .padding(.leading, 16)
             VStack(alignment: .leading, spacing: 8) {
                 Text("图片标题（可自定义）")
                     .font(.system(size: 12))
@@ -295,7 +295,7 @@ struct ContentView: View {
                 Text("图片预览")
                     .font(.system(size: 15, weight: .medium))
             }
-            .padding(.leading, 12)
+            .padding(.leading, 20)
             previewImage
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .shadow(radius: 6)
