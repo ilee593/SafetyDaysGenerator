@@ -144,8 +144,8 @@ struct SafetyDaysShortcutsProvider: AppShortcutsProvider {
         AppShortcut(
             intent: GenerateAndShareIntent(),
             phrases: [
-                "发安全天数",
-                "生成安全天数"
+                "发\(.applicationName)",
+                "生成\(.applicationName)"
             ]
         )
     }
