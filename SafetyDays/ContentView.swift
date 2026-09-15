@@ -28,9 +28,6 @@ struct ContentView: View {
     @State private var generatedImage: UIImage?
 
     @State private var showingSettings = false
-    @State private var showingShareSheet = false
-
-    @State private var shareImage: UIImage?
 
     @State private var isGenerating = false
 
@@ -101,11 +98,6 @@ struct ContentView: View {
                 autoShare: $autoShare
             )
         }
-        .sheet(isPresented: $showingShareSheet) {
-            if let image = shareImage {
-                ShareSheet(activityItems: [image])
-            }
-        }
         .onAppear {
             loadStoredSettings()
             todayDate = Calendar.current.startOfDay(for: Date())
@@ -120,7 +112,7 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - 顶部蓝色标题栏（替代 NavigationView + toolbar）
+    // MARK: - 顶部蓝色标题栏（圆角卡片，避免贴边直角观感）
 
     private var headerBar: some View {
         HStack(spacing: 12) {
@@ -146,7 +138,18 @@ struct ContentView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
-        .background(Color(red: 0.08, green: 0.44, blue: 0.84))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 0.10, green: 0.47, blue: 0.87),
+                    Color(red: 0.06, green: 0.36, blue: 0.72)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 
     // MARK: - 日期信息卡片
@@ -346,8 +349,7 @@ struct ContentView: View {
 
             if autoShare {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    shareImage = image
-                    showingShareSheet = true
+                    presentShareSheet(with: image)
                 }
             }
         }
@@ -580,18 +582,35 @@ struct SettingsView: View {
 }
 
 
-// MARK: - 系统分享面板
+// MARK: - 系统分享面板（UIKit 直接 present，避免 iOS 16 SwiftUI sheet 白屏）
 
-struct ShareSheet: UIViewControllerRepresentable {
+extension ContentView {
 
-    let activityItems: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(
-            activityItems: activityItems,
+    private func presentShareSheet(with image: UIImage) {
+        let activityVC = UIActivityViewController(
+            activityItems: [image],
             applicationActivities: nil
         )
-    }
+        activityVC.excludedActivityTypes = [
+            .addToReadingList,
+            .assignToContact,
+            .openInIBooks
+        ]
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+        // iPad 需要 popover 锚点；iPhone 全屏 present
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            activityVC.popoverPresentationController?.sourceView = UIApplication.shared.connectedScenes
+                .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+                .first?.rootViewController?.view
+        }
+
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let rootVC = windowScene.keyWindow?.rootViewController {
+            var presenter = rootVC
+            while let presented = presenter.presentedViewController {
+                presenter = presented
+            }
+            presenter.present(activityVC, animated: true)
+        }
+    }
 }

@@ -39,10 +39,8 @@ targets:
         CODE_SIGN_IDENTITY: ""
         CODE_SIGNING_REQUIRED: "NO"
         CODE_SIGNING_ALLOWED: "NO"
-        # XcodeGen 默认注入 ASSETCATALOG_COMPILER_APPICON_NAME=AppIcon，
-        # 但 Assets.xcassets 里没 AppIcon.appiconset，actool 报错。
-        # 显式设为空字符串关闭它（TrollStore 对没 icon 的 IPA 也接受）。
-        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        # 启用 App 图标（Assets.xcassets/AppIcon.appiconset，1024 单尺寸）
+        ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: ""
 
       configs:
