@@ -172,14 +172,20 @@ struct ContentView: View {
                 Text("已持续天数")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.gray)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
                 Spacer()
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text("\(days)")
                         .font(.system(size: 36, weight: .black))
                         .foregroundColor(.blue)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                     Text("天")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.blue)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
                 }
             }
         }
@@ -195,6 +201,8 @@ struct ContentView: View {
             Text("起始日期")
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             DatePicker("", selection: $startDate, displayedComponents: .date)
                 .labelsHidden()
                 .datePickerStyle(.compact)
@@ -208,6 +216,8 @@ struct ContentView: View {
             Text("今天日期")
                 .font(.system(size: 12))
                 .foregroundColor(.gray)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
             DatePicker("", selection: $todayDate, displayedComponents: .date)
                 .labelsHidden()
                 .datePickerStyle(.compact)
